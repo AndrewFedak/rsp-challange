@@ -1,27 +1,16 @@
 import { GameSnapshot } from './GameSnapshot';
 import { Player } from '../player/Player';
 
-export enum GameState {
-  InProgress = 'InProgress',
-  Finished = 'Finished',
-}
-
 export class Game {
   constructor(
     private id: string,
     private host: Player,
-    private opponent: Player | null = null,
+    private opponent: Player,
     private winner: Player | null = null,
-    private state: GameState = GameState.InProgress,
   ) {}
 
   setWinner(winner: Player) {
-    this.state = GameState.Finished;
     this.winner = winner;
-  }
-
-  setOpponent(userId: string) {
-    this.opponent = new Player(this.id, userId);
   }
 
   restart() {
@@ -32,7 +21,6 @@ export class Game {
   }
 
   reset() {
-    this.state = GameState.InProgress;
     this.winner = null;
   }
 
@@ -45,7 +33,7 @@ export class Game {
   }
 
   isFinished(): boolean {
-    return this.state === GameState.Finished;
+    return !!this.winner;
   }
 
   isRoomFull() {
@@ -58,7 +46,6 @@ export class Game {
       this.host.getSnapshot(),
       this.opponent?.getSnapshot(),
       this.winner?.getSnapshot(),
-      this.state,
     );
   }
 }

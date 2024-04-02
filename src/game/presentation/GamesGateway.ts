@@ -1,33 +1,54 @@
 import {
   MessageBody,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Server } from 'socket.io';
+import { Socket } from 'socket.io';
 
-@WebSocketGateway({
+@WebSocketGateway(4000, {
   cors: {
     origin: '*',
   },
 })
-export class EventsGateway {
-  @WebSocketServer()
-  server: Server;
+export class GamesGateway implements OnGatewayDisconnect {
+  private games: Map<number, Socket[]> = new Map<number, Socket[]>();
 
-  @SubscribeMessage('events')
-  findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    console.log(data);
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: 'events', data: item })),
-    );
+  @SubscribeMessage('disconnect')
+  disconnect(client: Socket, payload: { blogId: number }): WsResponse<number> {
+    return { event: 'events', data: 2 };
   }
 
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: number): Promise<number> {
-    return data;
+  @SubscribeMessage('makeChoice')
+  makeChoice(@MessageBody() data: any): WsResponse<number> {
+    console.log(data);
+    return { event: 'events', data: 2 };
+  }
+
+  @SubscribeMessage('connect')
+  connect(client: Socket, payload: { blogId: number }) {
+    console.log('entered', payload)
+    const { blogId } = payload;
+    const sockets = this.games.get(blogId) || [];
+    sockets.push(client);
+    this.games.set(blogId, sockets);
+    console.log(`Client ${client.id} subscribed to blog ${blogId}`);
+  }
+
+  broadcastToGameSubscribers(blogId: number, message: any) {
+    const sockets = this.games.get(blogId) || [];
+    sockets.forEach((socket) => {
+      socket.emit('blogUpdate', message);
+    });
+  }
+
+  handleDisconnect(client: Socket) {
+    this.games.forEach((sockets, gameId) => {
+      this.games.set(
+        gameId,
+        sockets.filter((socket) => socket.id !== client.id),
+      );
+    });
   }
 }

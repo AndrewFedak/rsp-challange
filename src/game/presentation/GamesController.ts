@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { UserId } from 'libs/Auth/decorators/user';
@@ -7,10 +7,8 @@ import { FindGameByIdRequestParam } from './dto/FindGameByIdRequestParam';
 import { FindGameByIdResponseDto } from './dto/FindGameByIdResponseDto';
 
 import { CreateGameResponseDto } from './dto/CreateGameResponseDto';
+import { CreateGameRequestDto } from './dto/CreateGameRequestDto';
 import { CreateGameCommand } from '../application/command/CreateGameCommand';
-
-import { JoinGameRequestParam } from './dto/JoinGameRequestParam';
-import { JoinGameCommand } from '../application/command/JoinGameCommand';
 
 import { FindGameByIdQuery } from '../application/query/FindGameById';
 
@@ -22,19 +20,13 @@ export class GamesController {
   ) {}
 
   @Post('games')
-  async createGame(@UserId() userId: string): Promise<CreateGameResponseDto> {
-    const command = new CreateGameCommand(userId);
+  async createGame(
+    @UserId() userId: string,
+    @Body() body: CreateGameRequestDto,
+  ): Promise<CreateGameResponseDto> {
+    const command = new CreateGameCommand(userId, body.opponentId);
     const game = await this.commandBus.execute(command);
     return CreateGameResponseDto.fromGame(game);
-  }
-
-  @Post('games/:gameId/join')
-  async joinGame(
-    @Param() param: JoinGameRequestParam,
-    @UserId() userId: string,
-  ): Promise<void> {
-    const command = new JoinGameCommand(param.gameId, userId);
-    await this.commandBus.execute(command);
   }
 
   @Get('games/:gameId')
