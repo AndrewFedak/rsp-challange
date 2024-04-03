@@ -11,7 +11,7 @@ import mongoose from 'mongoose';
 
 @Injectable()
 class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  connection: typeof mongoose;
+  private connection: typeof mongoose;
 
   constructor(private configService: ConfigService) {}
 
@@ -27,7 +27,6 @@ class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.connection = await mongoose.connect(connectStr);
       console.log('Successfully connected to database');
     } catch (e) {
-      console.log('mongodb string', connectStr);
       console.log('DataBase connection failed. exiting now...');
       console.error(e);
       process.exit(1);
@@ -39,15 +38,8 @@ class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 }
 
-// export class EntityId extends String {
-//   constructor() {
-//     super(v4().split('-').join(''));
-//   }
-// }
-
 @Global()
 @Module({
   providers: [DatabaseService],
-  exports: [DatabaseService],
 })
 export class DatabaseModule {}

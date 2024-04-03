@@ -1,14 +1,14 @@
 import { v4 as uuid } from 'uuid';
 import { Injectable, Provider } from '@nestjs/common';
 
-import { User } from '../domain/User';
+import { UserDataModel } from 'libs/Database/entities/user';
+
+import { User } from 'src/users/domain/User';
 
 import {
   IUserRepository,
   USER_REPOSITORY_TOKEN,
 } from 'src/users/domain/UserRepository';
-
-import { UserDataModel } from './entity/user';
 
 @Injectable()
 export class UserRepository implements IUserRepository {

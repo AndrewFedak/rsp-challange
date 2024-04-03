@@ -21,7 +21,8 @@ export class CreateGameHandler
   async execute(command: CreateGameCommand): Promise<Game> {
     const newGameId = this._gameRepository.newId();
     const host = new Player(newGameId, command.hostId);
-    const newGame = new Game(newGameId, host);
+    const opponent = new Player(newGameId, command.opponentId);
+    const newGame = new Game(newGameId, host, opponent);
     await this._gameRepository.create(newGame);
     return newGame;
   }

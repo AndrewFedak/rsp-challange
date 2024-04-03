@@ -1,26 +1,34 @@
-// import { Inject } from '@nestjs/common';
-// import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
 
-// import {
-//   AccountClosed,
-//   IntegrationEventPublisher,
-//   INTEGRATION_EVENT_PUBLISHER,
-//   Topic,
-// } from 'libs/MessageModule';
-// import { Transactional } from 'libs/Transactional';
+import { EvaluateWinner } from 'src/game/domain/game/EvaluateWinner';
 
-// import { AccountClosedEvent } from 'src/account/domain/event/AccountClosedEvent';
+import {
+  GAME_REPOSITORY_TOKEN,
+  IGameRepository,
+} from 'src/game/domain/game/GameRepository';
 
-// @EventsHandler(AccountClosedEvent)
-// export class AccountClosedHandler implements IEventHandler<AccountClosedEvent> {
-//   @Inject(INTEGRATION_EVENT_PUBLISHER)
-//   private readonly integrationEventPublisher: IntegrationEventPublisher;
+import { GamesGateway } from 'src/game/presentation/GamesGateway';
 
-//   @Transactional()
-//   async handle(event: AccountClosedEvent): Promise<void> {
-//     await this.integrationEventPublisher.publish(
-//       Topic.ACCOUNT_CLOSED,
-//       new AccountClosed(event.accountId, event.email),
-//     );
-//   }
-// }
+import { ChoiceMadeEvent } from './ChoiceMadeEvent';
+
+@EventsHandler(ChoiceMadeEvent)
+export class ChoiceMadeHandelr implements IEventHandler<ChoiceMadeEvent> {
+  @Inject(GAME_REPOSITORY_TOKEN)
+  private readonly _gameRepository: IGameRepository;
+  @Inject()
+  private readonly _gamesGateway: GamesGateway;
+
+  async handle(command: ChoiceMadeEvent) {
+    const game = await this._gameRepository.findById(command.gameId);
+    const player1 = game.getHost();
+    const player2 = game.getOpponent();
+
+    const winner = EvaluateWinner.execute(player1, player2);
+
+    game.setWinner(winner);
+
+    await this._gameRepository.save(game);
+    await this._gamesGateway.broadcastGameChange(command.gameId);
+  }
+}

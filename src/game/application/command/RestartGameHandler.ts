@@ -7,6 +7,7 @@ import {
 } from 'src/game/domain/game/GameRepository';
 
 import { RestartGameCommand } from './RestartGameCommand';
+import { NotFoundGameException } from 'src/game/domain/exceptions/NotFoundGameException';
 
 @CommandHandler(RestartGameCommand)
 export class RestartGameHandler
@@ -18,7 +19,7 @@ export class RestartGameHandler
   async execute(command: RestartGameCommand): Promise<void> {
     const game = await this._gameRepository.findById(command.gameId);
     if (!game) {
-      throw new Error('Not found');
+      throw new NotFoundGameException(command.gameId);
     }
 
     game.restart();

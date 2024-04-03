@@ -1,33 +1,115 @@
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
+  ConnectedSocket,
   MessageBody,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
-  WsResponse,
 } from '@nestjs/websockets';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Server } from 'socket.io';
+import { Socket } from 'socket.io';
 
-@WebSocketGateway({
+import { FindGameByIdQuery } from '../application/query/FindGameById';
+
+import { DisconnectCommand } from '../application/command/DisconnectCommand';
+import { ConnectCommand } from '../application/command/ConnectCommand';
+import { RestartGameCommand } from '../application/command/RestartGameCommand';
+import { MakeChoiceCommand } from '../application/command/MakeChoiceCommand';
+
+import {
+  DisconnectEventDto,
+  DisconnectEventResponseDto,
+} from './events/DisconnectEventDto';
+import {
+  ConnectEventDto,
+  ConnectEventResponseDto,
+} from './events/ConnectEventDto';
+import {
+  RestartEventDto,
+  RestartEventResponseDto,
+} from './events/RestartEventDto';
+import {
+  MakeChoiceEventDto,
+  MakeChoiceEventResponseDto,
+} from './events/MakeChoiceEventDto';
+
+@WebSocketGateway(4000, {
   cors: {
     origin: '*',
   },
 })
-export class EventsGateway {
-  @WebSocketServer()
-  server: Server;
+export class GamesGateway implements OnGatewayDisconnect {
+  private games: Map<string, Socket[]> = new Map<string, Socket[]>();
 
-  @SubscribeMessage('events')
-  findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    console.log(data);
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: 'events', data: item })),
-    );
+  constructor(
+    readonly commandBus: CommandBus,
+    readonly queryBus: QueryBus,
+  ) {}
+
+  @SubscribeMessage('disconnect')
+  async disconnect(
+    @MessageBody() data: DisconnectEventDto,
+  ): Promise<DisconnectEventResponseDto> {
+    const command = new DisconnectCommand(data.gameId, data.userId);
+    await this.commandBus.execute(command);
+    this.broadcastGameChange(data.gameId);
+    return new DisconnectEventResponseDto('disconnect', 'Success');
   }
 
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: number): Promise<number> {
-    return data;
+  @SubscribeMessage('connect')
+  async connect(
+    @MessageBody() data: ConnectEventDto,
+    @ConnectedSocket() client: Socket,
+  ): Promise<ConnectEventResponseDto> {
+    const command = new ConnectCommand(data.gameId, data.userId);
+    await this.commandBus.execute(command);
+    this.broadcastGameChange(data.gameId);
+    this.handleConnect(client, data.gameId);
+    return new ConnectEventResponseDto('connect', 'Success');
+  }
+
+  @SubscribeMessage('restart')
+  async restart(
+    @MessageBody() data: RestartEventDto,
+  ): Promise<RestartEventResponseDto> {
+    const command = new RestartGameCommand(data.gameId);
+    await this.commandBus.execute(command);
+    this.broadcastGameChange(data.gameId);
+    return new ConnectEventResponseDto('restart', 'Success');
+  }
+
+  @SubscribeMessage('makeChoice')
+  async makeChoice(@MessageBody() data: MakeChoiceEventDto) {
+    const command = new MakeChoiceCommand(
+      data.gameId,
+      data.userId,
+      data.choice,
+    );
+    await this.commandBus.execute(command);
+    this.broadcastGameChange(data.gameId);
+    return new MakeChoiceEventResponseDto('makeChoice', 'Success');
+  }
+
+  async broadcastGameChange(gameId: string) {
+    const query = new FindGameByIdQuery(gameId);
+    const data = await this.queryBus.execute(query);
+    const sockets = this.games.get(gameId) || [];
+    sockets.forEach((socket) => {
+      socket.emit('gameUpdate', data);
+    });
+  }
+
+  handleConnect(client: Socket, gameId: string) {
+    const sockets = this.games.get(gameId) || [];
+    sockets.push(client);
+    this.games.set(gameId, sockets);
+  }
+
+  handleDisconnect(client: Socket) {
+    this.games.forEach((sockets, gameId) => {
+      this.games.set(
+        gameId,
+        sockets.filter((socket) => socket.id !== client.id),
+      );
+    });
   }
 }

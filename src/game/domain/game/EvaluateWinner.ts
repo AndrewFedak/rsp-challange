@@ -1,17 +1,11 @@
-import { Player } from '../player/Player';
+import { PlayerChoiceNotMadeException } from '../exceptions/PlayerChoiceNotMadeException';
 
-export enum GameChoice {
-  Rock = 'Rock',
-  Paper = 'Paper',
-  Scissors = 'Scissors',
-}
+import { Player, GameChoice } from '../player/Player';
 
 export class EvaluateWinner {
   static execute(player1: Player, player2: Player): Player | null {
     if (!player1.doesMadeChoice() || !player2.doesMadeChoice()) {
-      throw new Error(
-        "Can't determine winner. Both players should choose something",
-      );
+      throw new PlayerChoiceNotMadeException();
     }
 
     const hostChoice = player1.getChoice();
