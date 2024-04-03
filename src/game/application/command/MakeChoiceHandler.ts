@@ -1,6 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 
+import { FinishedGameException } from 'src/game/domain/exceptions/FinishedGameException';
+
 import {
   IGameRepository,
   GAME_REPOSITORY_TOKEN,
@@ -11,6 +13,7 @@ import {
 } from 'src/game/domain/player/PlayerRepository';
 
 import { MakeChoiceCommand } from './MakeChoiceCommand';
+import { NotFoundGameException } from 'src/game/domain/exceptions/NotFoundGameException';
 
 @CommandHandler(MakeChoiceCommand)
 export class MakeChoiceHandler
@@ -24,10 +27,10 @@ export class MakeChoiceHandler
   async execute(command: MakeChoiceCommand): Promise<void> {
     const game = await this._gameRepository.findById(command.gameId);
     if (!game) {
-      throw new Error('Not found');
+      throw new NotFoundGameException(command.gameId);
     }
     if (game.isFinished()) {
-      throw new Error("Can't change. Please reset game");
+      throw new FinishedGameException(command.gameId);
     }
     const player = await this._playerRepository.find(game, command.userId);
 

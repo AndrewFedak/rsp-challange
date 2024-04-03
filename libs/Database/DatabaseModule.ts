@@ -41,6 +41,5 @@ class DatabaseService implements OnModuleInit, OnModuleDestroy {
 @Global()
 @Module({
   providers: [DatabaseService],
-  exports: [DatabaseService],
 })
 export class DatabaseModule {}

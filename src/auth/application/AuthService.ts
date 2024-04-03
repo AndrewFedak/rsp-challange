@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { AccessTokenData } from 'libs/Auth/types';
+import { Transactional } from 'libs/Database/transaction';
 
 import { UsersService } from 'src/users/application/UsersService';
 
@@ -12,6 +13,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  @Transactional()
   async signIn(username: string) {
     const foundUser = await this.usersService.findOne(username);
     const user = foundUser || (await this.usersService.create(username));

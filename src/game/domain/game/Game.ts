@@ -1,3 +1,5 @@
+import { InProgressGameException } from '../exceptions/InProgressGameException';
+
 import { GameSnapshot } from './GameSnapshot';
 import { Player } from '../player/Player';
 
@@ -15,7 +17,7 @@ export class Game {
 
   restart() {
     if (!this.isFinished()) {
-      throw new Error("Can't reset game that is InProgress");
+      throw new InProgressGameException();
     }
     this.reset();
   }
