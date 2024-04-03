@@ -1,5 +1,7 @@
 import { Injectable, Provider } from '@nestjs/common';
 
+import { PlayerDataModel } from 'libs/Database/entities/player';
+
 import { Game } from 'src/game/domain/game/Game';
 import { Player } from 'src/game/domain/player/Player';
 
@@ -7,8 +9,6 @@ import {
   IPlayerRepository,
   PLAYER_REPOSITORY_TOKEN,
 } from 'src/game/domain/player/PlayerRepository';
-
-import { PlayerDataModel } from '../entities/player';
 
 @Injectable()
 class PlayerRepository implements IPlayerRepository {

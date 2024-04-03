@@ -22,6 +22,8 @@ export class Game {
 
   reset() {
     this.winner = null;
+    this.host.resetChoice();
+    this.opponent.resetChoice();
   }
 
   getHost() {
@@ -34,10 +36,6 @@ export class Game {
 
   isFinished(): boolean {
     return !!this.winner;
-  }
-
-  isRoomFull() {
-    return this.host && this.opponent;
   }
 
   getSnapshot(): GameSnapshot {

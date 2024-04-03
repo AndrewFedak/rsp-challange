@@ -1,5 +1,4 @@
-import { GameChoice } from '../game/EvaluateWinner';
-import { PlayerStatus } from './Player';
+import { GameChoice, PlayerStatus } from './Player';
 
 export class PlayerSnapshot {
   constructor(

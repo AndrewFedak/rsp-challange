@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { DatabaseModule } from 'libs/DatabaseModule';
+import { DatabaseModule } from 'libs/Database/DatabaseModule';
 
 import { UsersService } from './application/UsersService';
 import { UserRepositoryImplement } from './infrastructure/UserRepositoryImplement';

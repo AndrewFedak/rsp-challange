@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
+import { GameDataModel } from 'libs/Database/entities/game';
+
 import { FindGameByIdResult } from 'src/game/application/query/FindGameByIdResult';
 
 import {
   GAME_QUERIES_TOKEN,
   IGameQueries,
 } from 'src/game/application/query/GameQueries';
-import { GameDataModel } from '../entities/game';
 
 @Injectable()
 class GameQueries implements IGameQueries {

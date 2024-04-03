@@ -1,10 +1,4 @@
-import { Player } from '../player/Player';
-
-export enum GameChoice {
-  Rock = 'Rock',
-  Paper = 'Paper',
-  Scissors = 'Scissors',
-}
+import { Player, GameChoice } from '../player/Player';
 
 export class EvaluateWinner {
   static execute(player1: Player, player2: Player): Player | null {

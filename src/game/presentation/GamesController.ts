@@ -33,9 +33,7 @@ export class GamesController {
   async findGameById(
     @Param() param: FindGameByIdRequestParam,
   ): Promise<FindGameByIdResponseDto> {
-    console.log('Here');
     const query = new FindGameByIdQuery(param.gameId);
-    const data = await this.queryBus.execute(query);
-    return data;
+    return await this.queryBus.execute(query);
   }
 }

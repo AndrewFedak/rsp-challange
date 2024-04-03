@@ -2,9 +2,10 @@ import { Logger, Module, Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { CreateGameHandler } from './application/command/CreateGameHandler';
-import { EvaluateWinnerHandler } from './application/command/EvaluateWinnerHandler';
 import { MakeChoiceHandler } from './application/command/MakeChoiceHandler';
 import { RestartGameHandler } from './application/command/RestartGameHandler';
+import { DisconnectHandler } from './application/command/DisconnectHandler';
+import { ConnectHandler } from './application/command/ConnectHandler';
 
 import { FindGameByIdHandler } from './application/query/FindGameByIdHandler';
 
@@ -15,6 +16,7 @@ import { PlayerRepositoryImplement } from './infrastructure/repository/PlayerRep
 
 import { GamesController } from './presentation/GamesController';
 import { GamesGateway } from './presentation/GamesGateway';
+import { ChoiceMadeHandelr } from './application/event/ChoiceMadeHandler';
 
 const infrastructure: Provider[] = [
   GameRepositoryImplement,
@@ -25,11 +27,14 @@ const infrastructure: Provider[] = [
 const application = [
   // Commands
   CreateGameHandler,
-  EvaluateWinnerHandler,
   MakeChoiceHandler,
   RestartGameHandler,
+  DisconnectHandler,
+  ConnectHandler,
   // Queries
   FindGameByIdHandler,
+  // Events
+  ChoiceMadeHandelr,
 ];
 
 @Module({

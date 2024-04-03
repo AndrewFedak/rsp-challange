@@ -1,6 +1,6 @@
 import { ICommand } from '@nestjs/cqrs';
 
-import { GameChoice } from 'src/game/domain/game/EvaluateWinner';
+import { GameChoice } from 'src/game/domain/player/Player';
 
 export class MakeChoiceCommand implements ICommand {
   constructor(

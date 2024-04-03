@@ -1,15 +1,15 @@
 import { Injectable, Provider } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
+import { GameDataModel } from 'libs/Database/entities/game';
+import { PlayerDataModel } from 'libs/Database/entities/player';
+
 import { Game } from 'src/game/domain/game/Game';
 
 import {
   GAME_REPOSITORY_TOKEN,
   IGameRepository,
 } from 'src/game/domain/game/GameRepository';
-
-import { GameDataModel } from '../entities/game';
-import { PlayerDataModel } from '../entities/player';
 
 @Injectable()
 class GameRepository implements IGameRepository {
@@ -40,8 +40,17 @@ class GameRepository implements IGameRepository {
     return GameDataModel.toDomain(gameData, host, opponent, winner);
   }
   async save(game: Game) {
+    const gameSnapshot = game.getSnapshot();
     const gameData = GameDataModel.fromDomain(game.getSnapshot());
     await GameDataModel.updateOne({ _id: gameData._id }, gameData);
+    await PlayerDataModel.updateOne(
+      { gameId: gameData._id, userId: gameData.hostId },
+      PlayerDataModel.fromDomain(gameSnapshot.host),
+    );
+    await PlayerDataModel.updateOne(
+      { gameId: gameData._id, userId: gameData.opponentId },
+      PlayerDataModel.fromDomain(gameSnapshot.opponent),
+    );
   }
 }
 

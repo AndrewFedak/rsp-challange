@@ -2,39 +2,32 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 
 import {
-  IGameRepository,
   GAME_REPOSITORY_TOKEN,
+  IGameRepository,
 } from 'src/game/domain/game/GameRepository';
 import {
   IPlayerRepository,
   PLAYER_REPOSITORY_TOKEN,
 } from 'src/game/domain/player/PlayerRepository';
 
-import { MakeChoiceCommand } from './MakeChoiceCommand';
+import { DisconnectCommand } from './DisconnectCommand';
 
-@CommandHandler(MakeChoiceCommand)
-export class MakeChoiceHandler
-  implements ICommandHandler<MakeChoiceCommand, void>
+@CommandHandler(DisconnectCommand)
+export class DisconnectHandler
+  implements ICommandHandler<DisconnectCommand, void>
 {
   @Inject(GAME_REPOSITORY_TOKEN)
   private readonly _gameRepository: IGameRepository;
   @Inject(PLAYER_REPOSITORY_TOKEN)
   private readonly _playerRepository: IPlayerRepository;
 
-  async execute(command: MakeChoiceCommand): Promise<void> {
+  async execute(command: DisconnectCommand): Promise<void> {
     const game = await this._gameRepository.findById(command.gameId);
-    if (!game) {
-      throw new Error('Not found');
-    }
-    if (game.isFinished()) {
-      throw new Error("Can't change. Please reset game");
-    }
+    game.reset();
+    await this._gameRepository.save(game);
+
     const player = await this._playerRepository.find(game, command.userId);
-
-    player.setChoice(command.choice);
-
+    player.disconnect();
     await this._playerRepository.save(player);
-
-    player.commit();
   }
 }

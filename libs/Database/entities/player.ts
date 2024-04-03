@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 
-import { GameChoice } from 'src/game/domain/game/EvaluateWinner';
 import {
+  GameChoice,
   Player as PlayerEntity,
   PlayerStatus,
 } from 'src/game/domain/player/Player';
