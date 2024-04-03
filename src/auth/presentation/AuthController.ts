@@ -20,7 +20,7 @@ export class AuthController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('login')
+  @Post('login-or-register')
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto.name);
   }
