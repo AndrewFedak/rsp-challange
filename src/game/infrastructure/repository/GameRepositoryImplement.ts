@@ -25,32 +25,36 @@ class GameRepository implements IGameRepository {
   }
   async findById(id: string) {
     const gameData = await GameDataModel.findById(id).exec();
-    const host = await PlayerDataModel.findOne({
-      userId: gameData.hostId,
-      gameId: id,
-    });
-    const opponent = await PlayerDataModel.findOne({
-      userId: gameData.opponentId,
-      gameId: id,
-    });
-    const winner = await PlayerDataModel.findOne({
-      userId: gameData.winnerId,
-      gameId: id,
-    });
+    const [host, opponent, winner] = await Promise.all([
+      PlayerDataModel.findOne({
+        userId: gameData.hostId,
+        gameId: id,
+      }),
+      PlayerDataModel.findOne({
+        userId: gameData.opponentId,
+        gameId: id,
+      }),
+      PlayerDataModel.findOne({
+        userId: gameData.winnerId,
+        gameId: id,
+      }),
+    ]);
     return GameDataModel.toDomain(gameData, host, opponent, winner);
   }
   async save(game: Game) {
     const gameSnapshot = game.getSnapshot();
     const gameData = GameDataModel.fromDomain(game.getSnapshot());
-    await GameDataModel.updateOne({ _id: gameData._id }, gameData);
-    await PlayerDataModel.updateOne(
-      { gameId: gameData._id, userId: gameData.hostId },
-      PlayerDataModel.fromDomain(gameSnapshot.host),
-    );
-    await PlayerDataModel.updateOne(
-      { gameId: gameData._id, userId: gameData.opponentId },
-      PlayerDataModel.fromDomain(gameSnapshot.opponent),
-    );
+    await Promise.all([
+      GameDataModel.updateOne({ _id: gameData._id }, gameData),
+      PlayerDataModel.updateOne(
+        { gameId: gameData._id, userId: gameData.hostId },
+        PlayerDataModel.fromDomain(gameSnapshot.host),
+      ),
+      PlayerDataModel.updateOne(
+        { gameId: gameData._id, userId: gameData.opponentId },
+        PlayerDataModel.fromDomain(gameSnapshot.opponent),
+      ),
+    ]);
   }
 }
 

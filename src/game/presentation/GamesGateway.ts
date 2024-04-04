@@ -38,6 +38,8 @@ import {
   },
 })
 export class GamesGateway implements OnGatewayDisconnect {
+  // TO IMPROVE: Introduce Message Broker (i.e RabbitMQ) to support horizontal scaling
+  // Subscribe on rabbitmq topic and once subscribed event emmited, push it to appropriate socket client
   private games: Map<string, Socket[]> = new Map<string, Socket[]>();
 
   constructor(

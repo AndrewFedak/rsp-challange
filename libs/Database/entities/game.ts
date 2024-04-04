@@ -34,7 +34,7 @@ export class GameDataModel extends Game {
     return new GameEntity(
       game._id,
       PlayerDataModel.toDomain(host),
-      opponent ? PlayerDataModel.toDomain(opponent) : null,
+      PlayerDataModel.toDomain(opponent),
       winner ? PlayerDataModel.toDomain(winner) : null,
     );
   }
