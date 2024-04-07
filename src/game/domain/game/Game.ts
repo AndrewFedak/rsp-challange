@@ -37,7 +37,7 @@ export class Game {
   }
 
   isFinished(): boolean {
-    return !!this.winner;
+    return !!this.host.getChoice() && !!this.opponent.getChoice();
   }
 
   getSnapshot(): GameSnapshot {

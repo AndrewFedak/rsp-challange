@@ -30,7 +30,7 @@ export class Player extends AggregateRoot {
     this.apply(new ChoiceMadeEvent(this.gameId));
   }
 
-  getChoice() {
+  getChoice(): GameChoice | null {
     return this.choice;
   }
 
