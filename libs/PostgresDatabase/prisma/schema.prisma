@@ -1,0 +1,38 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Game {
+  id         String   @id @default(uuid())
+  hostId     String
+  host       User     @relation(name: "host", fields: [hostId], references: [id])
+  opponentId String
+  opponent   User     @relation(name: "opponent", fields: [opponentId], references: [id])
+  winnerId   String?
+  winner     User?    @relation(name: "winner", fields: [winnerId], references: [id])
+  players    Player[] @relation("game")
+}
+
+model Player {
+  choice String?
+  userId String
+  gameId String
+  user   User    @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+  game   Game    @relation("game", fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, userId])
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  players   Player[] @relation("user")
+  hosts     Game[]   @relation("host")
+  opponents Game[]   @relation("opponent")
+  winners   Game[]   @relation("winner")
+}
